@@ -1,0 +1,6 @@
+@DoitFinal.Forum_HostAddress = http://localhost:5259
+
+GET {{DoitFinal.Forum_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
