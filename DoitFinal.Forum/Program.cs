@@ -1,6 +1,6 @@
 
 using DoitFinal.Forum.Data;
-using DoitFinal.Forum.Models;
+using DoitFinal.Forum.Models.Entities;
 using DoitFinal.Forum.Repositories;
 using DoitFinal.Forum.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -45,9 +45,9 @@ namespace DoitFinal.Forum
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
             });
 
-            builder.Services.AddScoped<ITopicRepository, TopicRepository>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+            builder.Services.AddScoped<IRepository<Topic>, TopicRepository>();
+            builder.Services.AddScoped<IRepository<ForumUser>, UserRepository>();
+            builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
 
             var app = builder.Build();
 

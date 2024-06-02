@@ -1,11 +1,11 @@
 ﻿using DoitFinal.Forum.Data;
-using DoitFinal.Forum.Models;
+using DoitFinal.Forum.Models.Entities;
 using DoitFinal.Forum.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoitFinal.Forum.Repositories
 {
-    public class TopicRepository : ITopicRepository
+    public class TopicRepository : IRepository<Topic>
     {
         private readonly ForumDbContext _context;
 
@@ -14,31 +14,37 @@ namespace DoitFinal.Forum.Repositories
             _context = context;
         }
 
-        public async Task<Topic> CreateTopicAsync(Topic topic)
+        public async Task<Topic> CreateAsync(Topic topic)
         {
-            var newTopic = await _context.Topics.AddAsync(topic);
-            return newTopic.Entity;
+            await _context.Topics.AddAsync(topic);
+            await _context.SaveChangesAsync();
+            return topic;
         }
 
-        public async Task<IEnumerable<Topic>> GetAllTopicsAsync()
+        public async Task<IEnumerable<Topic>> GetAllAsync()
         {
             return await _context.Topics.ToListAsync();
         }
 
-        public Task<Topic> GetTopicByIdAsync(int id)
+        public async Task<Topic> GetByIdAsync(int id)
         {
-            var topic = _context.Topics.FirstOrDefault(t => t.Id == id);
-            return Task.FromResult(topic);
+            return await _context.Topics.FindAsync(id);
         }
 
-        public async Task<Topic> UpdateTopicAsync(Topic topic)
+        public async Task UpdateAsync(Topic topic)
         {
-            var updatedTopic = _context.Topics.Update(topic);
-            return updatedTopic.Entity;
+            _context.Topics.Update(topic);
+            await _context.SaveChangesAsync();
         }
-        public void DeleteTopicAsync(int id)
+
+        public async Task DeleteAsync(int id)
         {
-            _context.Topics.Remove(new Topic { Id = id });
+            var topic = await _context.Topics.FindAsync(id);
+            if (topic != null)
+            {
+                _context.Topics.Remove(topic);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

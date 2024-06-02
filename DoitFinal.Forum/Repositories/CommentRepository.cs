@@ -1,11 +1,11 @@
 ﻿using DoitFinal.Forum.Data;
-using DoitFinal.Forum.Models;
+using DoitFinal.Forum.Models.Entities;
 using DoitFinal.Forum.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DoitFinal.Forum.Repositories
 {
-    public class CommentRepository : ICommentRepository
+    public class CommentRepository : IRepository<Comment>
     {
         private readonly ForumDbContext _context;
 
@@ -13,28 +13,38 @@ namespace DoitFinal.Forum.Repositories
         {
             _context = context;
         }
-        public async Task<Comment> CreateCommentAsync(Comment comment)
+
+        public async Task<Comment> CreateAsync(Comment comment)
         {
             await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync();
             return comment;
         }
 
-        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
+        public async Task<IEnumerable<Comment>> GetAllAsync()
         {
-            await _context.Comments.ToListAsync();
-            return _context.Comments;
+            return await _context.Comments.ToListAsync();
         }
 
-        public async Task<Comment> GetCommentByIdAsync(int id)
+        public async Task<Comment> GetByIdAsync(int id)
         {
-            await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
-            return _context.Comments.FirstOrDefault(c => c.Id == id);
+            return await _context.Comments.FindAsync(id);
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsByTopicIdAsync(int topicId)
+        public async Task UpdateAsync(Comment comment)
         {
-            await _context.Comments.Where(c => c.TopicId == topicId).ToListAsync();
-            return _context.Comments.Where(c => c.TopicId == topicId);
+            _context.Comments.Update(comment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment != null)
+            {
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

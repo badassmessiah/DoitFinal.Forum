@@ -24,10 +24,10 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
-    <Folder Include="DTOs\" />
     <Folder Include="BackgroundServices\" />
     <Folder Include="Middlewares\" />
     <Folder Include="Mappings\" />
+    <Folder Include="Models\DTOs\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
