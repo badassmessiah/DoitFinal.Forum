@@ -1,4 +1,6 @@
-﻿namespace DoitFinal.Forum.Repositories.Interfaces
+﻿using DoitFinal.Forum.Models.Entities;
+
+namespace DoitFinal.Forum.Repositories.Interfaces
 {
     public interface IRepository<T, TId> where T : class
     {
@@ -7,5 +9,7 @@
         Task<T> GetOneAsync(TId id);
         Task UpdateAsync(T entity);
         Task DeleteAsync(TId id);
+
+        Task<Topic> GetOneWithCommentsAsync(int id);
     }
 }

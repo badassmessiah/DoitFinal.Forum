@@ -46,5 +46,10 @@ namespace DoitFinal.Forum.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public Task<Topic> GetOneWithCommentsAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

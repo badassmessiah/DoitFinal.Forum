@@ -38,6 +38,9 @@ namespace DoitFinal.Forum.Models.Entities
         public TopicStatus Status { get; set; }
 
         [Required]
+        public string UserEmail { get; set; }
+
+        [Required]
         [ForeignKey(nameof(ForumUser))]
         public string UserId { get; set; }
         public ForumUser User { get; set; }

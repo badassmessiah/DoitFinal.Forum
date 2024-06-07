@@ -1,3 +1,4 @@
+using AutoMapper;
 using DoitFinal.Forum.Models.Entities;
 using DoitFinal.Forum.Repositories;
 using DoitFinal.Forum.Repositories.Interfaces;
@@ -5,31 +6,46 @@ using DoitFinal.Forum.Repositories.Interfaces;
 public class TopicService
 {
     private readonly IRepository<Topic, int> _topicRepository;
+    private readonly IMapper _mapper;
 
-    public TopicService(IRepository<Topic, int> topicRepository)
+    public TopicService(IRepository<Topic, int> topicRepository, IMapper mapper)
     {
         _topicRepository = topicRepository;
+        _mapper = mapper;
     }
 
-    public async Task<Topic> CreateTopicAsync(Topic topic)
+    public async Task<TopicDTO> CreateTopicAsync(TopicDTO topicDTO, string userEmail, string UserId)
     {
-        return await _topicRepository.CreateAsync(topic);
+        var topic = _mapper.Map<Topic>(topicDTO);
+        topic.UserEmail = userEmail;
+        topic.UserId = UserId;
+        var createdTopic = await _topicRepository.CreateAsync(topic);
+        return _mapper.Map<TopicDTO>(createdTopic);
     }
 
-    public async Task<IEnumerable<Topic>> GetAllTopicsAsync()
+    public async Task<IEnumerable<TopicDTO>> GetAllTopicsAsync()
     {
-        return await _topicRepository.GetAllAsync();
+        var topics = await _topicRepository.GetAllAsync();
+        return _mapper.Map<IEnumerable<TopicDTO>>(topics);
     }
 
-    public async Task<Topic> GetTopicByIdAsync(int id)
+    public async Task<TopicDetailDTO> GetTopicByIdAsync(int id)
     {
-        return await _topicRepository.GetOneAsync(id);
+        var topic = await _topicRepository.GetOneWithCommentsAsync(id);
+        return _mapper.Map<TopicDetailDTO>(topic);
     }
 
-    public async Task UpdateTopicAsync(Topic topic)
+    public async Task UpdateTopicAsync(int id, TopicDTO topicDTO)
     {
+        var topic = await _topicRepository.GetOneAsync(id);
+        if (topic == null)
+        {
+            throw new Exception("Topic not found");
+        }
+        _mapper.Map(topicDTO, topic);
         await _topicRepository.UpdateAsync(topic);
     }
+
 
     public async Task DeleteTopicAsync(int id)
     {

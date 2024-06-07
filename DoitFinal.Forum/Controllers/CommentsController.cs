@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using DoitFinal.Forum.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/comments")]
@@ -15,15 +17,7 @@ public class CommentsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse>> Get()
     {
-        var comments = await _commentService.GetAllCommentsAsync();
-        var commentDTOs = comments.Select(c => new CommentDTO
-        {
-            Id = c.Id,
-            Content = c.Content,
-            CreatedAt = c.CreatedAt,
-            TopicId = c.TopicId,
-            UserId = c.UserId
-        });
+        var commentDTOs = await _commentService.GetAllCommentsAsync();
         return Ok(CreateApiResponse(commentDTOs, 200, true, "Comments fetched successfully"));
     }
 
@@ -32,15 +26,7 @@ public class CommentsController : ControllerBase
     {
         try
         {
-            var comment = await _commentService.GetCommentByIdAsync(id);
-            var commentDTO = new CommentDTO
-            {
-                Id = comment.Id,
-                Content = comment.Content,
-                CreatedAt = comment.CreatedAt,
-                TopicId = comment.TopicId,
-                UserId = comment.UserId
-            };
+            var commentDTO = await _commentService.GetCommentByIdAsync(id);
             return Ok(CreateApiResponse(commentDTO, 200, true, "Comment fetched successfully"));
         }
         catch (Exception ex)
@@ -50,36 +36,31 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<ApiResponse>> Post([FromBody] CommentDTO commentDTO)
     {
-        var comment = new Comment
+        if (!User.Identity.IsAuthenticated)
         {
-            Content = commentDTO.Content,
-            TopicId = commentDTO.TopicId,
-            UserId = commentDTO.UserId
-        };
-        var createdComment = await _commentService.CreateCommentAsync(comment);
-        commentDTO.Id = createdComment.Id;
-        commentDTO.CreatedAt = createdComment.CreatedAt;
-        return CreatedAtAction(nameof(Get), new { id = createdComment.Id }, CreateApiResponse(commentDTO, 201, true, "Comment created successfully"));
+            return Unauthorized();
+        }
+
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var createdCommentDTO = await _commentService.CreateCommentAsync(commentDTO, userId);
+        return CreatedAtAction(nameof(Get), CreateApiResponse(createdCommentDTO, 201, true, "Comment created successfully"));
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse>> Put(int id, [FromBody] CommentDTO commentDTO)
     {
-        if (id != commentDTO.Id)
+        try
         {
-            return BadRequest(CreateApiResponse(null, 400, false, "ID mismatch"));
+            await _commentService.UpdateCommentAsync(commentDTO);
+            return Ok(CreateApiResponse(commentDTO, 200, true, "Comment updated successfully"));
         }
-        var comment = new Comment
+        catch (Exception ex)
         {
-            Id = commentDTO.Id,
-            Content = commentDTO.Content,
-            TopicId = commentDTO.TopicId,
-            UserId = commentDTO.UserId
-        };
-        await _commentService.UpdateCommentAsync(comment);
-        return Ok(CreateApiResponse(commentDTO, 200, true, "Comment updated successfully"));
+            return BadRequest(CreateApiResponse(null, 400, false, ex.Message));
+        }
     }
 
     [HttpDelete("{id}")]

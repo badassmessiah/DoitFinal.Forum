@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using DoitFinal.Forum.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/topics")]
@@ -15,8 +17,8 @@ public class TopicsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse>> Get()
     {
-        var topics = await _topicService.GetAllTopicsAsync();
-        return Ok(CreateApiResponse(topics, 200, true, "Topics fetched successfully"));
+        var topicDTOs = await _topicService.GetAllTopicsAsync();
+        return Ok(CreateApiResponse(topicDTOs, 200, true, "Topics fetched successfully"));
     }
 
     [HttpGet("{id}")]
@@ -24,8 +26,8 @@ public class TopicsController : ControllerBase
     {
         try
         {
-            var topic = await _topicService.GetTopicByIdAsync(id);
-            return Ok(CreateApiResponse(topic, 200, true, "Topic fetched successfully"));
+            var topicDetailDTO = await _topicService.GetTopicByIdAsync(id);
+            return Ok(CreateApiResponse(topicDetailDTO, 200, true, "Topic with comments fetched successfully"));
         }
         catch (Exception ex)
         {
@@ -34,22 +36,34 @@ public class TopicsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponse>> Post([FromBody] Topic topic)
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> Post([FromBody] TopicDTO topicDTO)
     {
-        var createdTopic = await _topicService.CreateTopicAsync(topic);
-        return CreatedAtAction(nameof(Get), new { id = createdTopic.Id }, CreateApiResponse(createdTopic, 201, true, "Topic created successfully"));
+        if (!User.Identity.IsAuthenticated)
+        {
+            return Unauthorized();
+        }
+
+        string userEmail = User.Identity.Name;
+        string UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var createdTopicDTO = await _topicService.CreateTopicAsync(topicDTO, userEmail, UserId);
+        return CreatedAtAction(nameof(Get), CreateApiResponse(createdTopicDTO, 201, true, "Topic created successfully"));
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse>> Put(int id, [FromBody] Topic topic)
+    public async Task<ActionResult<ApiResponse>> Put(int id, [FromBody] TopicDTO topicDTO)
     {
-        if (id != topic.Id)
+        try
         {
-            return BadRequest(CreateApiResponse(null, 400, false, "ID mismatch"));
+            await _topicService.UpdateTopicAsync(id, topicDTO);
+            return Ok(CreateApiResponse(null, 200, true, "Topic updated successfully"));
         }
-        await _topicService.UpdateTopicAsync(topic);
-        return Ok(CreateApiResponse(topic, 200, true, "Topic updated successfully"));
+        catch (Exception ex)
+        {
+            return BadRequest(CreateApiResponse(null, 400, false, ex.Message));
+        }
     }
+
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> Delete(int id)

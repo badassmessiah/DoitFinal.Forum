@@ -46,5 +46,10 @@ namespace DoitFinal.Forum.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<Topic> GetOneWithCommentsAsync(int id)
+        {
+            return await _context.Topics.Include(t => t.Comments).FirstOrDefaultAsync(t => t.Id == id);
+        }
     }
 }
