@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DoitFinal.Forum.Repositories
 {
-    public class UserRepository : IRepository<ForumUser>
+    public class UserRepository : IUserInterface<ForumUser, string>
     {
         private readonly UserManager<ForumUser> _userManager;
 
@@ -15,40 +15,26 @@ namespace DoitFinal.Forum.Repositories
             _userManager = userManager;
         }
 
-        public async Task<ForumUser> CreateAsync(ForumUser user)
-        {
-            var result = await _userManager.CreateAsync(user);
-            if (result.Succeeded)
-            {
-                return user;
-            }
-            else
-            {
-                throw new Exception("Failed to create user");
-            }
-        }
-
         public async Task<IEnumerable<ForumUser>> GetAllAsync()
         {
             return await _userManager.Users.ToListAsync();
         }
 
-        public async Task<ForumUser> GetByIdAsync(int id)
+        public async Task<ForumUser> GetOneAsync(string email)
         {
-            return await _userManager.FindByIdAsync(id.ToString());
+            return await _userManager.FindByEmailAsync(email);
         }
 
-        public async Task UpdateAsync(ForumUser user)
+        public async Task LockoutUser(string email)
         {
-            await _userManager.UpdateAsync(user);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByEmailAsync(email);
             if (user != null)
             {
-                await _userManager.DeleteAsync(user);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            }
+            else
+            {
+                throw new Exception("User not found");
             }
         }
     }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DoitFinal.Forum.Repositories
 {
-    public class TopicRepository : IRepository<Topic>
+    public class TopicRepository : IRepository<Topic, int>
     {
         private readonly ForumDbContext _context;
 
@@ -26,7 +26,7 @@ namespace DoitFinal.Forum.Repositories
             return await _context.Topics.ToListAsync();
         }
 
-        public async Task<Topic> GetByIdAsync(int id)
+        public async Task<Topic> GetOneAsync(int id)
         {
             return await _context.Topics.FindAsync(id);
         }

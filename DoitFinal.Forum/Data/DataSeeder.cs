@@ -25,8 +25,7 @@ namespace DoitFinal.Forum.Data
                         TwoFactorEnabled = false,
                         LockoutEnd = null,
                         LockoutEnabled = true,
-                        AccessFailedCount = 0,
-                        IsBanned = false
+                        AccessFailedCount = 0
                     },
                     new ForumUser()
                     {
@@ -42,8 +41,7 @@ namespace DoitFinal.Forum.Data
                         TwoFactorEnabled = false,
                         LockoutEnd = null,
                         LockoutEnabled = true,
-                        AccessFailedCount = 0,
-                        IsBanned = false
+                        AccessFailedCount = 0
                     },
                     new ForumUser()
                     {
@@ -59,8 +57,7 @@ namespace DoitFinal.Forum.Data
                         TwoFactorEnabled = false,
                         LockoutEnd = null,
                         LockoutEnabled = true,
-                        AccessFailedCount = 0,
-                        IsBanned = false
+                        AccessFailedCount = 0
                     }
                 );
         }

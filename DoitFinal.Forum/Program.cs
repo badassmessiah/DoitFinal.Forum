@@ -45,9 +45,13 @@ namespace DoitFinal.Forum
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
             });
 
-            builder.Services.AddScoped<IRepository<Topic>, TopicRepository>();
-            builder.Services.AddScoped<IRepository<ForumUser>, UserRepository>();
-            builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
+            builder.Services.AddScoped<IRepository<Topic, int>, TopicRepository>();
+            builder.Services.AddScoped<IRepository<Comment, int>, CommentRepository>();
+            builder.Services.AddScoped<IUserInterface<ForumUser, string>, UserRepository>();
+
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<TopicService>();
+            builder.Services.AddScoped<CommentService>();
 
             var app = builder.Build();
 
