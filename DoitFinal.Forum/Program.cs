@@ -64,6 +64,8 @@ namespace DoitFinal.Forum
                 app.UseSwaggerUI();
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
             app.MapIdentityApi<ForumUser>();
 
             app.UseHttpsRedirection();

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -5,10 +6,42 @@ using Microsoft.AspNetCore.Mvc;
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
+    private readonly TopicService _topicService;
+    private readonly CommentService _commentService;
 
-    public UsersController(UserService userService)
+    public UsersController(UserService userService, TopicService topicService, CommentService commentService)
     {
-        _userService = userService;
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _topicService = topicService ?? throw new ArgumentNullException(nameof(topicService));
+        _commentService = commentService ?? throw new ArgumentNullException(nameof(commentService));
+    }
+
+    [HttpGet("topic/{id}")]
+    public async Task<ActionResult<ApiResponse>> GetUserByTopicId(int id)
+    {
+
+        var topic = await _topicService.GetTopicByIdAsync(id);
+        if (topic == null)
+        {
+            return NotFound(CreateApiResponse(null, 404, false, "Topic not found"));
+        }
+
+        var user = await _userService.GetUserByEmailAsync(topic.UserEmail);
+        return Ok(CreateApiResponse(user, 200, true, "User retrieved successfully"));
+
+    }
+
+    [HttpGet("comment/{Commentid}")]
+    public async Task<ActionResult<ApiResponse>> GetUserByCommentId(int Commentid)
+    {
+        var comment = await _commentService.GetCommentByIdAsync(Commentid);
+        if (comment == null)
+        {
+            return NotFound(CreateApiResponse(null, 404, false, "Comment not found"));
+        }
+
+        var user = await _userService.GetUserByEmailAsync(comment.UserEmail);
+        return Ok(CreateApiResponse(user, 200, true, "User retrieved successfully"));
     }
 
     [HttpGet]
@@ -18,7 +51,7 @@ public class UsersController : ControllerBase
         return Ok(CreateApiResponse(users, 200, true, "Users retrieved successfully"));
     }
 
-    [HttpGet("{email}")]
+    [HttpGet("email/{email}")]
     public async Task<ActionResult<ApiResponse>> GetUserByEmail(string email)
     {
         if (string.IsNullOrEmpty(email))
@@ -35,7 +68,8 @@ public class UsersController : ControllerBase
         return Ok(CreateApiResponse(user, 200, true, "User retrieved successfully"));
     }
 
-    [HttpPost("{email}/lockout")]
+    [Authorize(Roles = "Admin")]
+    [HttpPost("email/{email}/lockout")]
     public async Task<ActionResult<ApiResponse>> LockOutUser(string email)
     {
         if (string.IsNullOrEmpty(email))

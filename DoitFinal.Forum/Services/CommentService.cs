@@ -7,11 +7,13 @@ public class CommentService
 {
     private readonly IRepository<Comment, int> _commentRepository;
     private readonly IMapper _mapper;
+    private readonly TopicService _topicService;
 
-    public CommentService(IRepository<Comment, int> commentRepository, IMapper mapper)
+    public CommentService(IRepository<Comment, int> commentRepository, IMapper mapper, TopicService topicService)
     {
         _commentRepository = commentRepository;
         _mapper = mapper;
+        _topicService = topicService;
     }
 
     public async Task<CommentDTO> CreateCommentAsync(CommentDTO commentDTO, string userId)

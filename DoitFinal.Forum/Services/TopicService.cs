@@ -14,11 +14,35 @@ public class TopicService
         _mapper = mapper;
     }
 
+    public async Task UpdateTopicStateAsync(int id, TopicState state)
+    {
+        var topic = await _topicRepository.GetOneAsync(id);
+        if (topic == null)
+        {
+            throw new Exception("Topic not found");
+        }
+        topic.State = state;
+        await _topicRepository.UpdateAsync(topic);
+    }
+
+    public async Task UpdateTopicStatus(int id, TopicStatus status)
+    { 
+        var topic = await _topicRepository.GetOneAsync(id);
+        if (topic == null)
+        {
+            throw new Exception("Topic not found");
+        }
+        topic.Status = status;
+        await _topicRepository.UpdateAsync(topic);
+    }
+
     public async Task<TopicDTO> CreateTopicAsync(TopicDTO topicDTO, string userEmail, string UserId)
     {
         var topic = _mapper.Map<Topic>(topicDTO);
         topic.UserEmail = userEmail;
         topic.UserId = UserId;
+        topic.State = TopicState.Pending;
+        topic.Status = TopicStatus.Active;
         var createdTopic = await _topicRepository.CreateAsync(topic);
         return _mapper.Map<TopicDTO>(createdTopic);
     }
