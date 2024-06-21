@@ -1,8 +1,9 @@
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using DoitFinal.Forum.Data;
 using DoitFinal.Forum.Models.Entities;
 using DoitFinal.Forum.Repositories;
 using DoitFinal.Forum.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -19,7 +20,6 @@ namespace DoitFinal.Forum
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
             builder.Services.AddAuthorization();
             builder.Services.AddIdentityApiEndpoints<ForumUser>(options =>
             {
@@ -54,6 +54,7 @@ namespace DoitFinal.Forum
             builder.Services.AddScoped<CommentService>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.AddHostedService<InactiveTopicService>();
 
             var app = builder.Build();
 

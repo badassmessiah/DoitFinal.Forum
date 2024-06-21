@@ -6,6 +6,7 @@ public class InactiveTopicService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private const int DaysUntilInactive = 7;
+    DateTime inactiveThreshold = DateTime.UtcNow.AddMinutes(-1);
 
     public InactiveTopicService(IServiceProvider serviceProvider)
     {
@@ -27,7 +28,7 @@ public class InactiveTopicService : BackgroundService
                     var topicWithComments = await _topicRepository.GetOneWithCommentsAsync(topic.Id);
                     var lastComment = topicWithComments.Comments.OrderByDescending(c => c.CreatedAt).FirstOrDefault();
 
-                    if (lastComment != null && (DateTime.Now - lastComment.CreatedAt).TotalDays > DaysUntilInactive)
+                    if (lastComment != null && (DateTime.Now - lastComment.CreatedAt) > inactiveThreshold.TimeOfDay)
                     {
                         topic.Status = TopicStatus.Inactive;
                         await _topicRepository.UpdateAsync(topic);
